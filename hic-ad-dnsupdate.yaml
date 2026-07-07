@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: hic-mssql
+  name: hic-ad-dnsupdate
   namespace: argocd
 spec:
   goTemplate: true
@@ -13,7 +13,7 @@ spec:
               repoURL: https://github.com/hic-infra/hic-k8tre-extensions.git
               revision: main
               directories:
-                - path: hic-mssql/envs/*
+                - path: hic-ad-dnsupdate/envs/*
           - clusters:
               selector:
                 matchLabels:
