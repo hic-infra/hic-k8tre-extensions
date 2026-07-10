@@ -103,7 +103,7 @@ spec:
         fsGroup: 10001
       containers:
         - name: mssql
-          image: ghcr.io/aaronjackson/mssql-with-tools@sha256:dc257bb7476852807f8afe57b03f66fd74f47d5a10360e12bfa1ffa96606bbaa
+          image: mcr.microsoft.com/mssql/server:2025-latest
           imagePullPolicy: IfNotPresent
           env:
             - name: "ACCEPT_EULA"
