@@ -1,0 +1,78 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: mssql-account-job
+  namespace: ad
+automountServiceAccountToken: true
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: mssql-account-job
+  namespace: keycloak
+rules:
+  - apiGroups: ["identity.k8tre.io", "research.k8tre.io"]
+    resources: ["users", "groups", "projects"]
+    verbs: ["get", "list"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: mssql-account-job
+  namespace: keycloak
+subjects:
+  - kind: ServiceAccount
+    name: mssql-account-job
+    namespace: ad
+roleRef:
+  kind: Role
+  name: mssql-account-job
+  apiGroup: rbac.authorization.k8s.io
+
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: mssql-account-job
+  namespace: ad
+spec:
+  schedule: "* * * * *"
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 2
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: mssql-account-job
+          restartPolicy: OnFailure
+          volumes:
+            - name: scripts
+              configMap:
+                defaultMode: 0770
+                name: mssql-account-job-scripts
+          containers:
+          - name: mssql-account-job
+            image: mcr.microsoft.com/mssql-tools
+            imagePullPolicy: IfNotPresent
+            volumeMounts:
+              - mountPath: /provision.sh
+                name: scripts
+                subPath: provision.sh
+            command:
+              - /provision.sh
+            env:
+              - name: SQLCMDUSER
+                value: sa
+              - name: SQLCMDPASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    name: mssql
+                    key: password
+              - name: NAMESPACE
+                valueFrom:
+                  fieldRef:
+                    fieldPath: metadata.namespace
+

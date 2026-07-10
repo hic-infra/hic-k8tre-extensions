@@ -3,6 +3,7 @@ kind: Kustomization
 
 resources:
   - mssql-service.yaml
+  - mssql-account-job.yaml
 
 configMapGenerator:
   # This will be globbed by the ad service and executed there
@@ -10,3 +11,7 @@ configMapGenerator:
     namespace: ad
     files:
       - mssql-spn.sh
+  - name: mssql-account-job-scripts
+    namespace: ad
+    files:
+      - provision.sh
