@@ -1,3 +1,20 @@
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: mssql
+  namespace: ad
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    name: secret-store
+    kind: ClusterSecretStore
+  data:
+    - secretKey: password
+      remoteRef:
+        key: hic-mssql
+        property: password
+
+---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -92,9 +109,10 @@ spec:
             - name: "ACCEPT_EULA"
               value: "Y"
             - name: "MSSQL_SA_PASSWORD"
-              value: "X2T%Tp5b89V%WzXD!tq"
-            - name: "KRB5_TRACE"
-              value: "/dev/stdout"
+              valueFrom:
+                secretKeyRef:
+                  name: mssql
+                  key: password
           volumeMounts:
             - name: mssql-data
               mountPath: /var/opt/mssql/data
